@@ -5,17 +5,27 @@
 package net.simforge.airways;
 
 import net.simforge.airways.engine.activity.ActivityInfo;
+import net.simforge.airways.ops.JourneyOps;
 import net.simforge.airways.persistence.model.Journey;
+import net.simforge.airways.persistence.model.JourneyItinerary;
+import net.simforge.airways.persistence.model.Person;
+import net.simforge.airways.persistence.model.flight.TransportFlight;
 import net.simforge.airways.processes.journey.activity.LookingForPersons;
+import net.simforge.airways.processes.journey.activity.LookingForTickets;
+import org.hibernate.Session;
 import org.junit.Test;
 
-import static junit.framework.TestCase.assertTrue;
+import java.util.List;
+
+import static net.simforge.airways.TestWorld.BEGINNING_OF_TIME;
+import static org.junit.Assert.*;
 
 public class JourneyLookingForTicketsTest extends BaseEngineCaseTest {
 
     private static final int GROUP_SIZE = 5;
 
     private Journey journey;
+    private TransportFlight ab101_today;
 
     protected void buildWorld() {
         TestWorld testWorld = new TestWorld(sessionFactory);
@@ -23,18 +33,33 @@ public class JourneyLookingForTicketsTest extends BaseEngineCaseTest {
 
         journey = testWorld.createJourney(testWorld.getLondonCity(), testWorld.getManchesterCity(), GROUP_SIZE);
 
-        // todo p2 create transport flight
+        testWorld.createAircraftTypes();
+
+        ab101_today = testWorld.createTransportFlight(
+                "AB101",
+                testWorld.getEgllAirport(),
+                testWorld.getEgccAirport(),
+                testWorld.getA320Type(),
+                BEGINNING_OF_TIME.plusHours(12),
+                160);
     }
 
     @Test
     public void testCase() {
         engine.startActivity(LookingForPersons.class, journey);
 
-        runEngine(1000);
+        runEngine(10);
 
-        ActivityInfo status = engine.findActivity(LookingForPersons.class, journey);
-        assertTrue(status.isFinished());
+        ActivityInfo status = engine.findActivity(LookingForTickets.class, journey);
+        assertTrue(status.isDone());
 
-        // todo p1 finish test & write asserts
+        try (Session session = sessionFactory.openSession()) {
+            journey = session.load(Journey.class, journey.getId());
+            assertEquals(Journey.Status.WaitingForFlight, journey.getStatus().intValue());
+
+            List<JourneyItinerary> itineraryList = JourneyOps.getItineraries(session, journey);
+            assertEquals(1, itineraryList.size());
+            assertEquals(ab101_today.getId(), itineraryList.get(0).getFlight().getId());
+        }
     }
 }
