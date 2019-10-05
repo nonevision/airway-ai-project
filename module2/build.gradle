@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     compile project(':persistence')
+    compile project(':process-engine')
     compile project(':module0')
     compile project(':module1')
     
