@@ -18,7 +18,7 @@
         var url = window.location.href;
         var captured = /id=([^&]+)/.exec(url)[1];
         if (!captured) {
-            alert('No pilot number specified');
+            alert('No ID specified');
             window.close();
         }
         var id = captured;
@@ -44,7 +44,7 @@
         });
 
         function actionsCell(value, row) {
-            return '<a href="transport-flight.html?id=' + row.id + '">Details</a>';
+            return '<a href="journey.html?id=' + row.id + '">Details</a>';
         }
 
     </script>

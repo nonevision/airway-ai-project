@@ -1,0 +1,75 @@
+<!--
+  ~ Airways Project (c) Alexey Kornev, 2015-2019
+  -->
+
+<html>
+
+<head>
+
+    <title>Airways - Person ....</title>
+
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-table.min.css">
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-table.min.js"></script>
+
+    <script>
+        var url = window.location.href;
+        var captured = /id=([^&]+)/.exec(url)[1];
+        if (!captured) {
+            alert('No ID specified');
+            window.close();
+        }
+        var id = captured;
+
+
+        $(document).ready(function () {
+            $.ajax({
+                url: 'http://localhost:9100/misc/person?id=' + id,
+                //method: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    $('#log').bootstrapTable({
+                        data: response.log
+                    });
+                    $('#log').bootstrapTable('resetView', {
+                        height: $('#log').height() + 30
+                    });
+                },
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            });
+        });
+
+    </script>
+
+    <style>
+        .fixed-table-container { /* lets disable frame around table */
+            border-width: 0px 0px 0px 0px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Airways - Person ....</h1>
+
+    <h3>Event log</h3>
+    <table id="log" class="table table-no-bordered">
+        <thead>
+        <tr>
+            <th data-field="dt">Date/Time</th>
+            <th data-field="msg">Message</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+</body>
+
+</html>
